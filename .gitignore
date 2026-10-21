@@ -1,0 +1,48 @@
+# OS Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE & Editors
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.project
+.classpath
+.settings/
+.springBeans
+.sts4-cache
+
+# Build outputs
+target/
+**/target/
+build/
+**/build/
+dist/
+**/dist/
+*.class
+*.jar
+*.war
+*.ear
+
+# Logs
+*.log
+logs/
+
+# Uploads & Temp
+uploads/
+**/uploads/
+tmp/
+temp/
+
+# Node / Frontend (future)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment / local overrides
+.env
+.env.local
