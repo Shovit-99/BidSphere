@@ -1,6 +1,6 @@
-# BidSphere — Online Auction Platform (Backend)
+# BidSphere — Real-Time Online Auction Platform (Full-Stack)
 
-BidSphere is a robust, production-ready Spring Boot backend for a real-time online auction platform. It features concurrent live bidding with optimistic locking, anti-sniping protection, automated auction closing schedulers, WebSocket broadcasts, comprehensive JWT security, image uploading, payments/checkout, watchlists, in-app notifications, and full Swagger/OpenAPI documentation.
+BidSphere is a full-stack, high-concurrency real-time online auction platform featuring a modern **React 19 Vite** frontend and a robust **Spring Boot 3.4.1** backend. It features concurrent live bidding with optimistic locking, anti-sniping protection, automated auction closing schedulers, WebSocket STOMP broadcasts, comprehensive JWT security, image uploading, payments/checkout, watchlists, in-app notifications, and full Swagger/OpenAPI documentation.
 
 ---
 
