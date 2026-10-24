@@ -1,8 +1,11 @@
 package com.bidsphere.scheduler;
 
 import com.bidsphere.entity.Auction;
+import com.bidsphere.entity.Payment;
 import com.bidsphere.entity.enums.AuctionStatus;
+import com.bidsphere.entity.enums.PaymentStatus;
 import com.bidsphere.repository.AuctionRepository;
+import com.bidsphere.repository.PaymentRepository;
 import com.bidsphere.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +26,7 @@ import java.util.List;
 public class AuctionCloseScheduler {
 
     private final AuctionRepository auctionRepository;
+    private final PaymentRepository paymentRepository;
     private final NotificationService notificationService;
 
     @Scheduled(fixedRateString = "${app.auction.close-rate-ms}")
@@ -43,6 +47,17 @@ public class AuctionCloseScheduler {
                     // Auction has a winner
                     auction.setStatus(AuctionStatus.CLOSED);
                     auctionRepository.save(auction);
+
+                    // Create pending payment record if not present
+                    if (!paymentRepository.existsByAuctionId(auction.getId())) {
+                        Payment pendingPayment = Payment.builder()
+                                .auction(auction)
+                                .user(auction.getHighestBidder())
+                                .amount(auction.getCurrentPrice())
+                                .status(PaymentStatus.PENDING)
+                                .build();
+                        paymentRepository.save(pendingPayment);
+                    }
 
                     // Notify winner and seller
                     notificationService.notifyWinner(auction.getHighestBidder(), auction);

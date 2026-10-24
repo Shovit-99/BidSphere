@@ -54,4 +54,11 @@ public interface AuctionRepository extends JpaRepository<Auction, Long>, JpaSpec
     Page<Auction> findByStatus(AuctionStatus status, Pageable pageable);
 
     long countByStatus(AuctionStatus status);
+
+    Page<Auction> findByHighestBidderIdAndStatus(Long bidderId, AuctionStatus status, Pageable pageable);
+
+    long countByHighestBidderIdAndStatus(Long bidderId, AuctionStatus status);
+
+    @Query("SELECT COUNT(a) FROM Auction a JOIN a.item i WHERE i.seller.id = :sellerId")
+    long countBySellerId(@Param("sellerId") Long sellerId);
 }

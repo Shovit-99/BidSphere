@@ -35,4 +35,9 @@ public interface BidRepository extends JpaRepository<Bid, Long> {
      * Check if a bid exists for an auction (to block edits).
      */
     boolean existsByAuctionId(Long auctionId);
+
+    /**
+     * Count total bids placed by a bidder.
+     */
+    long countByBidderId(Long bidderId);
 }

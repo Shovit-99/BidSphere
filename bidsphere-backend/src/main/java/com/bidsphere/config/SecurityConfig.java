@@ -47,16 +47,19 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Public endpoints
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/auctions/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
+                .requestMatchers("/api/auctions/my").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/auctions/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/auctions/{id}/bids").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/users/{id:[0-9]+}").permitAll()
                 .requestMatchers("/ws/**").permitAll()
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/api-docs/**").permitAll()
                 .requestMatchers("/uploads/**").permitAll()
 
                 // Admin endpoints
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
-                // Authenticated endpoints
+                // Authenticated endpoints (bids, watchlist, notifications, payments, users)
                 .anyRequest().authenticated()
             )
             .authenticationProvider(authenticationProvider())
