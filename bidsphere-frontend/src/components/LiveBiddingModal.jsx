@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import { wsService } from '../services/websocket';
 import { api } from '../services/api';
+import { formatINR } from '../lib/currency';
 import confetti from 'canvas-confetti';
 import { 
   X, 
@@ -129,7 +130,7 @@ export default function LiveBiddingModal({ auction, onClose, onBidSuccess }) {
     }
 
     if (bidAmount < minRequiredBid) {
-      setErrorMsg(`Bid must be at least $${minRequiredBid.toLocaleString()} (Min increment is $${currentAuction.minIncrement})`);
+      setErrorMsg(`Bid must be at least ${formatINR(minRequiredBid)} (Min increment is ${formatINR(currentAuction.minIncrement)})`);
       return;
     }
 
@@ -171,7 +172,7 @@ export default function LiveBiddingModal({ auction, onClose, onBidSuccess }) {
   };
 
   const formatPrice = (val) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(val);
+    return formatINR(val);
   };
 
   return (
@@ -188,7 +189,8 @@ export default function LiveBiddingModal({ auction, onClose, onBidSuccess }) {
           justifyContent: 'space-between',
           alignItems: 'center',
           borderBottom: '1px solid var(--border-color)',
-          background: 'rgba(15, 23, 42, 0.7)'
+          background: 'rgba(255, 255, 255, 0.04)',
+          backdropFilter: 'blur(16px)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <span className="live-indicator">
@@ -203,18 +205,18 @@ export default function LiveBiddingModal({ auction, onClose, onBidSuccess }) {
           <button 
             onClick={onClose}
             style={{
-              background: 'none',
-              border: 'none',
+              background: 'rgba(255, 255, 255, 0.06)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
               color: 'var(--text-muted)',
               cursor: 'pointer',
-              padding: 4,
+              padding: 6,
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
             }}
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
@@ -222,7 +224,7 @@ export default function LiveBiddingModal({ auction, onClose, onBidSuccess }) {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.15fr', gap: 0 }}>
           
           {/* Left Column: Image, Details & Anti-Snipe Notice */}
-          <div style={{ padding: 24, borderRight: '1px solid var(--border-color)', background: 'rgba(11, 15, 23, 0.5)' }}>
+          <div style={{ padding: 24, borderRight: '1px solid var(--border-color)', background: 'rgba(255, 255, 255, 0.02)' }}>
             <div style={{ borderRadius: 'var(--radius-lg)', overflow: 'hidden', height: 260, marginBottom: 16, position: 'relative' }}>
               <img 
                 src={currentAuction.imageUrl} 
@@ -269,7 +271,7 @@ export default function LiveBiddingModal({ auction, onClose, onBidSuccess }) {
 
             <div style={{ marginTop: 16, fontSize: '0.78rem', color: 'var(--text-dim)', display: 'flex', justifyContent: 'space-between' }}>
               <span>Seller: <strong style={{ color: 'var(--text-muted)' }}>{currentAuction.sellerName}</strong></span>
-              <span>Min Incr: <strong style={{ color: 'var(--text-muted)' }}>${currentAuction.minIncrement}</strong></span>
+              <span>Min Incr: <strong style={{ color: 'var(--text-muted)' }}>{formatINR(currentAuction.minIncrement)}</strong></span>
             </div>
           </div>
 
@@ -351,7 +353,7 @@ export default function LiveBiddingModal({ auction, onClose, onBidSuccess }) {
                       style={{ flex: 1, padding: '6px 4px', fontSize: '0.75rem' }}
                       onClick={() => setBidAmount(currentAuction.currentPrice + inc)}
                     >
-                      +${inc}
+                      +{formatINR(inc)}
                     </button>
                   ))}
                 </div>
@@ -359,7 +361,7 @@ export default function LiveBiddingModal({ auction, onClose, onBidSuccess }) {
                 <div style={{ display: 'flex', gap: 10 }}>
                   <div style={{ position: 'relative', flex: 1 }}>
                     <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontWeight: 700 }}>
-                      $
+                      ₹
                     </span>
                     <input 
                       type="number"

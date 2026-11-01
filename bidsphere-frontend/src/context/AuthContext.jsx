@@ -10,20 +10,14 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     // Check if user is stored in localStorage
     const saved = getStoredUser();
-    if (saved) {
+    // If the saved session is the Marcus demo session, clean it up so the visitor sees Login/Register
+    if (saved && (saved.name?.includes('Marcus') || saved.email === 'seller@motors.com')) {
+      setStoredUser(null);
+      setAuthToken(null);
+      setUser(null);
+    } else if (saved && saved.token) {
       setUser(saved);
-    } else {
-      // Default to demo bidder for immediate interactive convenience
-      const demoUser = {
-        id: 3,
-        name: 'David Henderson',
-        email: 'bidder@bidsphere.com',
-        role: 'ROLE_BIDDER',
-        token: 'mock-jwt-demo-token'
-      };
-      setUser(demoUser);
-      setStoredUser(demoUser);
-      setAuthToken(demoUser.token);
+      setAuthToken(saved.token);
     }
     setLoading(false);
   }, []);
@@ -44,7 +38,8 @@ export function AuthProvider({ children }) {
   };
 
   const register = async (name, email, password, phone, role) => {
-    const res = await api.register({ name, email, password, phone, role });
+    const cleanRole = (role || 'BIDDER').replace(/^ROLE_/, '').toUpperCase();
+    const res = await api.register({ name, email, password, phone, role: cleanRole });
     const userData = {
       id: res.id,
       name: res.name,
@@ -77,8 +72,8 @@ export function AuthProvider({ children }) {
     } else if (role === 'SELLER') {
       demo = {
         id: 2,
-        name: 'Marcus Heritage Motors',
-        email: 'seller@motors.com',
+        name: 'Heritage Consignment',
+        email: 'seller@bidsphere.com',
         role: 'ROLE_SELLER',
         token: 'mock-jwt-seller-token'
       };

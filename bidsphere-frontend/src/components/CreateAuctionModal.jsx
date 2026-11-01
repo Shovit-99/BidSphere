@@ -171,7 +171,7 @@ export default function CreateAuctionModal({ categories, onClose, onCreated }) {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div className="form-group">
-                <label className="form-label">Starting Price ($) *</label>
+                <label className="form-label">Starting Price (₹ INR) *</label>
                 <input 
                   type="number" 
                   className="form-input mono-font" 
@@ -183,7 +183,7 @@ export default function CreateAuctionModal({ categories, onClose, onCreated }) {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Min Bid Increment ($) *</label>
+                <label className="form-label">Min Bid Increment (₹ INR) *</label>
                 <input 
                   type="number" 
                   className="form-input mono-font" 

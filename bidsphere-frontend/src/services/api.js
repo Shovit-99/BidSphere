@@ -364,7 +364,7 @@ function handleOfflineFallback(endpoint, options) {
     return {
       content: [
         { id: 1, name: 'Admin Master', email: 'admin@bidsphere.com', role: 'ROLE_ADMIN', enabled: true },
-        { id: 2, name: 'Marcus Heritage Motors', email: 'marcus@motors.com', role: 'ROLE_SELLER', enabled: true },
+        { id: 2, name: 'Heritage Motors Consignment', email: 'heritage@motors.com', role: 'ROLE_SELLER', enabled: true },
         { id: 3, name: 'David Henderson', email: 'bidder@bidsphere.com', role: 'ROLE_BIDDER', enabled: true },
         { id: 4, name: 'Geneva Vaults', email: 'vaults@geneva.ch', role: 'ROLE_SELLER', enabled: true },
         { id: 5, name: 'Elena Rostova', email: 'elena@gmail.com', role: 'ROLE_BIDDER', enabled: true }

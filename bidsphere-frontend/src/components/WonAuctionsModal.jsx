@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { useNotifications } from '../context/NotificationContext';
+import { formatINR } from '../lib/currency';
 import confetti from 'canvas-confetti';
 import { 
   X, 
@@ -71,7 +72,7 @@ export default function WonAuctionsModal({ onClose }) {
       setPaymentSuccess(res);
       addToast({
         title: 'Settlement Complete! 🎉',
-        message: `Payment of $${payingAuction.currentPrice.toLocaleString()} processed successfully. Reference: ${res.transactionRef || 'TXN-SETTLED'}`,
+        message: `Payment of ${formatINR(payingAuction.currentPrice)} processed successfully. Reference: ${res.transactionRef || 'TXN-SETTLED'}`,
         type: 'success'
       });
 
@@ -91,7 +92,7 @@ export default function WonAuctionsModal({ onClose }) {
   };
 
   const formatPrice = (val) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(val);
+    return formatINR(val);
   };
 
   return (

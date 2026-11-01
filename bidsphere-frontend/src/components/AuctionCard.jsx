@@ -49,50 +49,33 @@ export default function AuctionCard({ auction, onOpenBidModal, onWatchlistChange
   };
 
   const formatPrice = (val) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(val);
+    if (!val && val !== 0) return '₹0';
+    // Format in Indian numbering (lakhs, crores)
+    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
   };
 
   return (
     <div 
-      className="glass-panel" 
+      className="glass-panel group flex flex-col overflow-hidden cursor-pointer rounded-2xl transition-all duration-300 hover:-translate-y-1.5" 
       onClick={() => onOpenBidModal(auction)}
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        cursor: 'pointer',
-        position: 'relative',
-        transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-      }}
     >
       {/* Thumbnail Banner */}
-      <div style={{ position: 'relative', width: '100%', height: 230, overflow: 'hidden', backgroundColor: '#0f172a' }}>
+      <div className="relative w-full h-56 overflow-hidden bg-slate-950">
         <img 
           src={auction.imageUrl} 
           alt={auction.title}
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            transition: 'transform 0.5s ease',
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.06)'}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1.0)'}
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-106"
         />
 
         {/* Gradient Overlay for bottom readability */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          background: 'linear-gradient(to top, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0.2) 50%, rgba(15, 23, 42, 0) 100%)'
-        }}></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent" />
 
         {/* Top Badges */}
-        <div style={{ position: 'absolute', top: 12, left: 12, display: 'flex', gap: 6, zIndex: 2 }}>
+        <div className="absolute top-3 left-3 flex items-center gap-2 z-10">
           {timeLeft.isEnded ? (
             <span className="badge badge-rose">ENDED</span>
           ) : timeLeft.isAntiSnipe ? (
-            <span className="badge badge-rose" style={{ animation: 'livePulse 1s infinite' }}>
+            <span className="badge badge-rose animate-pulse">
               <AlertTriangle size={12} /> ANTI-SNIPE ACTIVE
             </span>
           ) : (
@@ -101,57 +84,24 @@ export default function AuctionCard({ auction, onOpenBidModal, onWatchlistChange
               LIVE
             </span>
           )}
-          <span className="badge badge-primary">{auction.condition.replace('_', ' ')}</span>
+          <span className="badge badge-primary glass-pill">{auction.condition ? auction.condition.replace(/_/g, ' ') : 'VERIFIED'}</span>
         </div>
 
         {/* Watchlist Heart Button */}
         <button 
           onClick={toggleWatchlist}
-          style={{
-            position: 'absolute',
-            top: 12,
-            right: 12,
-            width: 36,
-            height: 36,
-            borderRadius: '50%',
-            background: 'rgba(15, 23, 42, 0.75)',
-            backdropFilter: 'blur(8px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            zIndex: 3,
-            transition: 'all 0.2s ease'
-          }}
+          className="absolute top-3 right-3 w-9 h-9 rounded-full glass-pill flex items-center justify-center cursor-pointer z-10 hover:scale-110 transition-transform"
           title={inWatchlist ? "Remove from watchlist" : "Add to watchlist"}
         >
           <Heart 
-            size={18} 
-            color={inWatchlist ? "#f43f5e" : "#cbd5e1"} 
-            fill={inWatchlist ? "#f43f5e" : "none"} 
+            size={16} 
+            className={inWatchlist ? "text-rose-500 fill-rose-500" : "text-slate-300"} 
           />
         </button>
 
         {/* Live Countdown Floating Pill */}
-        <div style={{
-          position: 'absolute',
-          bottom: 12,
-          left: 12,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-          background: timeLeft.isAntiSnipe ? 'rgba(239, 68, 68, 0.85)' : 'rgba(15, 23, 42, 0.85)',
-          backdropFilter: 'blur(10px)',
-          padding: '5px 12px',
-          borderRadius: 'var(--radius-full)',
-          fontSize: '0.8rem',
-          fontWeight: 700,
-          color: '#ffffff',
-          border: '1px solid rgba(255, 255, 255, 0.15)',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
-        }}>
-          <Clock size={14} color={timeLeft.isAntiSnipe ? "#ffffff" : "#fbbf24"} />
+        <div className={`absolute bottom-3 left-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${timeLeft.isAntiSnipe ? 'bg-rose-600/90 text-white' : 'glass-pill text-white shadow-lg'}`}>
+          <Clock size={13} className={timeLeft.isAntiSnipe ? "text-white" : "text-amber-400"} />
           <span className="mono-font">
             {timeLeft.isEnded ? 'Auction Closed' : (
               timeLeft.days > 0 
@@ -163,45 +113,36 @@ export default function AuctionCard({ auction, onOpenBidModal, onWatchlistChange
       </div>
 
       {/* Card Body */}
-      <div style={{ padding: 18, display: 'flex', flexDirection: 'column', flex: 1 }}>
-        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>
+      <div className="p-5 flex flex-col flex-1">
+        <div className="text-[11px] font-semibold uppercase tracking-wider mb-1" style={{color: 'var(--accent-gold)'}}>
           {auction.categoryName}
         </div>
 
-        <h3 style={{ fontSize: '1.05rem', fontWeight: 700, marginBottom: 8, lineHeight: 1.35, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', height: 42 }}>
+        <h3 className="text-base font-bold text-white mb-2 line-clamp-1 group-hover:text-amber-200 transition-colors">
           {auction.title}
         </h3>
 
-        <div style={{ fontSize: '0.8rem', color: 'var(--text-dim)', marginBottom: 16 }}>
-          Listed by <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>{auction.sellerName}</span>
+        <div className="text-xs text-slate-400 mb-4">
+          Listed by <span className="text-slate-300 font-semibold">{auction.sellerName}</span>
         </div>
 
         {/* Pricing / Bid Box */}
-        <div style={{ 
-          marginTop: 'auto',
-          background: 'rgba(255, 255, 255, 0.03)',
-          border: '1px solid rgba(255, 255, 255, 0.06)',
-          borderRadius: 'var(--radius-md)',
-          padding: '12px 14px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
+        <div className="mt-auto glass-inset p-3.5 flex items-center justify-between">
           <div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>
+            <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
               Current Bid
             </div>
-            <div className="mono-font" style={{ fontSize: '1.35rem', fontWeight: 800, color: '#fbbf24', letterSpacing: '-0.02em' }}>
+            <div className="mono-font text-xl font-extrabold" style={{color:'var(--accent-gold)'}}>
               {formatPrice(auction.currentPrice)}
             </div>
           </div>
 
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+          <div className="text-right">
+            <div className="text-[10px] text-slate-400 font-medium">
               {auction.bidCount || 0} bids placed
             </div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--accent-emerald)', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}>
-              <TrendingUp size={13} />
+            <div className="text-xs font-semibold flex items-center justify-end gap-1 mt-0.5" style={{color:'var(--accent-teal)'}}>
+              <TrendingUp size={12} />
               <span>{auction.highestBidderName ? `Lead: ${auction.highestBidderName}` : 'No bids yet'}</span>
             </div>
           </div>
@@ -209,14 +150,13 @@ export default function AuctionCard({ auction, onOpenBidModal, onWatchlistChange
 
         {/* Place Bid CTA Button */}
         <button 
-          className="btn btn-primary" 
-          style={{ width: '100%', marginTop: 14 }}
+          className="btn btn-gold w-full mt-3.5 btn-sm cursor-pointer"
           onClick={(e) => {
             e.stopPropagation();
             onOpenBidModal(auction);
           }}
         >
-          <Gavel size={16} />
+          <Gavel size={15} />
           <span>Enter Bidding Room</span>
         </button>
       </div>

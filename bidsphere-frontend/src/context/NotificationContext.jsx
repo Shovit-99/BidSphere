@@ -1,12 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { api } from '../services/api';
-import { Bell, CheckCircle2, AlertTriangle, AlertCircle, Info, Zap } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, AlertCircle, Info } from 'lucide-react';
 
 const NotificationContext = createContext(null);
 
 export function NotificationProvider({ children }) {
   const [toasts, setToasts] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(2);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
 
   const addToast = ({ title, message, type = 'info', duration = 4000 }) => {
@@ -64,37 +64,37 @@ export function NotificationProvider({ children }) {
       <div className="toast-container">
         {toasts.map((toast) => {
           let IconComponent = Info;
-          let iconColor = '#60a5fa';
-          let borderStyle = '1px solid rgba(96, 165, 250, 0.3)';
+          let iconColor = '#3b82f6';
+          let borderColor = '#bfdbfe';
 
           if (toast.type === 'success') {
             IconComponent = CheckCircle2;
-            iconColor = '#34d399';
-            borderStyle = '1px solid rgba(52, 211, 153, 0.4)';
+            iconColor = '#10b981';
+            borderColor = '#a7f3d0';
           } else if (toast.type === 'warning' || toast.type === 'anti-snipe') {
             IconComponent = AlertTriangle;
-            iconColor = '#fbbf24';
-            borderStyle = '1px solid rgba(251, 191, 36, 0.4)';
+            iconColor = '#f59e0b';
+            borderColor = '#fde68a';
           } else if (toast.type === 'error' || toast.type === 'outbid') {
             IconComponent = AlertCircle;
-            iconColor = '#f87171';
-            borderStyle = '1px solid rgba(248, 113, 113, 0.4)';
+            iconColor = '#ef4444';
+            borderColor = '#fecaca';
           }
 
           return (
             <div
               key={toast.id}
-              className="toast glass-panel"
-              style={{ border: borderStyle }}
+              className="toast"
+              style={{ borderLeftWidth: 3, borderLeftColor: iconColor }}
             >
-              <div style={{ color: iconColor, marginTop: 2 }}>
+              <div style={{ color: iconColor, marginTop: 2, flexShrink: 0 }}>
                 <IconComponent size={20} />
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: 2 }}>
+                <div style={{ fontWeight: 600, fontSize: '0.875rem', marginBottom: 2, color: '#0f172a' }}>
                   {toast.title}
                 </div>
-                <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+                <div style={{ fontSize: '0.8125rem', color: '#64748b' }}>
                   {toast.message}
                 </div>
               </div>

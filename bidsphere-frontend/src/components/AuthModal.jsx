@@ -1,20 +1,40 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { 
+  X, 
+  LogIn, 
+  UserPlus, 
+  ShieldCheck, 
+  Mail, 
+  Lock, 
+  User, 
+  Phone, 
+  Eye, 
+  EyeOff, 
+  ArrowRight,
+  Gavel,
+  CheckCircle2,
+  UserCheck
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
-import { X, LogIn, UserPlus, Shield, Sparkles, Check } from 'lucide-react';
 
-export default function AuthModal({ onClose }) {
+export default function AuthModal({ isOpen = true, initialMode = 'login', onClose, onSuccess }) {
   const { login, register, switchDemoRole } = useAuth();
   const { addToast } = useNotifications();
+  const navigate = useNavigate();
 
-  const [mode, setMode] = useState('login'); // 'login' | 'register'
+  const [mode, setMode] = useState(initialMode); // 'login' | 'register'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [role, setRole] = useState('ROLE_BIDDER');
+  const [role, setRole] = useState('BIDDER'); // BIDDER or SELLER
+  const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  if (!isOpen) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,229 +43,274 @@ export default function AuthModal({ onClose }) {
 
     try {
       if (mode === 'login') {
+        if (!email || !password) {
+          throw new Error('Please enter both email and password.');
+        }
         await login(email, password);
-        addToast({ title: 'Welcome Back!', message: 'Signed in successfully.', type: 'success' });
+        addToast({
+          type: 'success',
+          title: 'Welcome Back!',
+          message: 'Signed in successfully.'
+        });
       } else {
+        if (!name || !email || !password) {
+          throw new Error('Please provide name, email, and password.');
+        }
         await register(name, email, password, phone, role);
-        addToast({ title: 'Account Created!', message: 'Welcome to BidSphere.', type: 'success' });
+        addToast({
+          type: 'success',
+          title: 'Account Created!',
+          message: `Welcome to BidSphere, ${name}.`
+        });
       }
-      onClose();
+      if (onSuccess) onSuccess();
+      if (onClose) onClose();
+      navigate('/dashboard');
     } catch (err) {
-      setError(err.message || 'Authentication failed. Please check credentials.');
+      setError(err.message || 'Authentication error. Please verify your credentials.');
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleQuickDemo = (roleKey) => {
+  const handleDemoLogin = (roleKey) => {
     switchDemoRole(roleKey);
-    addToast({ title: `Switched to Demo ${roleKey}`, message: `Now logged in as demo ${roleKey.toLowerCase()}.`, type: 'info' });
-    onClose();
+    addToast({
+      type: 'info',
+      title: 'Demo Session Active',
+      message: `Signed in as Demo ${roleKey.charAt(0).toUpperCase() + roleKey.slice(1).toLowerCase()}.`
+    });
+    if (onSuccess) onSuccess();
+    if (onClose) onClose();
+    navigate('/dashboard');
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-fadeIn">
       <div 
-        className="modal-content glass-panel" 
+        className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden"
         onClick={(e) => e.stopPropagation()}
-        style={{ maxWidth: 460, padding: 0, overflow: 'hidden' }}
       >
-        {/* Header */}
-        <div style={{
-          padding: '18px 24px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          borderBottom: '1px solid var(--border-color)',
-          background: 'rgba(15, 23, 42, 0.7)'
-        }}>
-          <div>
-            <h2 style={{ fontSize: '1.2rem', fontWeight: 800 }}>
-              {mode === 'login' ? 'Sign In to BidSphere' : 'Create BidSphere Account'}
-            </h2>
-            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-              Participate in live bidding and verify provenance.
+        {/* Modal Top Bar */}
+        <div className="p-5 pb-0 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-navy-900 border border-slate-700 flex items-center justify-center text-amber-400">
+              <Gavel size={16} />
             </div>
+            <span className="font-serif font-black text-lg tracking-tight text-slate-900">
+              BID<span className="text-amber-500">SPHERE</span>
+            </span>
           </div>
-          <button 
+
+          <button
+            type="button"
             onClick={onClose}
-            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+            aria-label="Close"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
-        {/* Tab switch */}
-        <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)' }}>
-          <button
-            type="button"
-            onClick={() => setMode('login')}
-            style={{
-              flex: 1,
-              padding: '12px',
-              border: 'none',
-              background: mode === 'login' ? 'rgba(99, 102, 241, 0.12)' : 'transparent',
-              borderBottom: mode === 'login' ? '2px solid #6366f1' : 'none',
-              color: mode === 'login' ? '#fff' : 'var(--text-muted)',
-              fontWeight: 600,
-              fontSize: '0.85rem',
-              cursor: 'pointer'
-            }}
-          >
-            Sign In
-          </button>
-          <button
-            type="button"
-            onClick={() => setMode('register')}
-            style={{
-              flex: 1,
-              padding: '12px',
-              border: 'none',
-              background: mode === 'register' ? 'rgba(99, 102, 241, 0.12)' : 'transparent',
-              borderBottom: mode === 'register' ? '2px solid #6366f1' : 'none',
-              color: mode === 'register' ? '#fff' : 'var(--text-muted)',
-              fontWeight: 600,
-              fontSize: '0.85rem',
-              cursor: 'pointer'
-            }}
-          >
-            Register
-          </button>
+        {/* Tab Switcher: Sign In vs Register */}
+        <div className="px-6 pt-5">
+          <div className="grid grid-cols-2 p-1 bg-slate-100 rounded-xl">
+            <button
+              type="button"
+              onClick={() => { setMode('login'); setError(''); }}
+              className={`py-2 rounded-lg text-xs font-bold transition cursor-pointer flex items-center justify-center gap-1.5 ${
+                mode === 'login'
+                  ? 'bg-white text-navy-900 shadow-2xs'
+                  : 'text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              <LogIn size={14} />
+              <span>Sign In</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => { setMode('register'); setError(''); }}
+              className={`py-2 rounded-lg text-xs font-bold transition cursor-pointer flex items-center justify-center gap-1.5 ${
+                mode === 'register'
+                  ? 'bg-white text-navy-900 shadow-2xs'
+                  : 'text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              <UserPlus size={14} />
+              <span>Create Account</span>
+            </button>
+          </div>
         </div>
 
         {/* Form Body */}
-        <div style={{ padding: 24 }}>
-          {error && (
-            <div style={{
-              background: 'rgba(239, 68, 68, 0.15)',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-              color: '#fca5a5',
-              padding: '10px 14px',
-              borderRadius: 'var(--radius-md)',
-              fontSize: '0.82rem',
-              marginBottom: 16
-            }}>
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit}>
-            {mode === 'register' && (
-              <>
-                <div className="form-group">
-                  <label className="form-label">Full Name</label>
-                  <input 
-                    type="text" 
-                    className="form-input" 
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g. Eleanor Vance"
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">Account Role</label>
-                  <div style={{ display: 'flex', gap: 10 }}>
-                    <button
-                      type="button"
-                      className={`btn btn-sm ${role === 'ROLE_BIDDER' ? 'btn-primary' : 'btn-secondary'}`}
-                      style={{ flex: 1 }}
-                      onClick={() => setRole('ROLE_BIDDER')}
-                    >
-                      Bidder / Buyer
-                    </button>
-                    <button
-                      type="button"
-                      className={`btn btn-sm ${role === 'ROLE_SELLER' ? 'btn-primary' : 'btn-secondary'}`}
-                      style={{ flex: 1 }}
-                      onClick={() => setRole('ROLE_SELLER')}
-                    >
-                      Verified Seller
-                    </button>
-                  </div>
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">Phone Number</label>
-                  <input 
-                    type="text" 
-                    className="form-input" 
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+1 (555) 000-0000"
-                  />
-                </div>
-              </>
-            )}
-
-            <div className="form-group">
-              <label className="form-label">Email Address</label>
-              <input 
-                type="email" 
-                className="form-input" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@example.com"
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Password</label>
-              <input 
-                type="password" 
-                className="form-input" 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-              />
-            </div>
-
-            <button 
-              type="submit" 
-              className="btn btn-primary"
-              disabled={submitting}
-              style={{ width: '100%', padding: '12px 0', marginTop: 8 }}
-            >
-              {submitting ? 'Authenticating...' : mode === 'login' ? 'Sign In' : 'Create Account'}
-            </button>
-          </form>
-
-          {/* Quick 1-Click Demo Accounts */}
-          <div style={{ marginTop: 24, paddingTop: 18, borderTop: '1px solid var(--border-color)', textAlign: 'center' }}>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              ⚡ Instant 1-Click Test Access
-            </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button 
+        <div className="p-6">
+          {/* Quick Demo Switcher */}
+          <div className="mb-5 p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1">
+              <UserCheck size={12} className="text-amber-600" />
+              <span>Instant Persona Access</span>
+            </p>
+            <div className="grid grid-cols-3 gap-1.5">
+              <button
                 type="button"
-                className="btn btn-secondary btn-sm"
-                style={{ flex: 1, fontSize: '0.75rem' }}
-                onClick={() => handleQuickDemo('BIDDER')}
+                onClick={() => handleDemoLogin('BIDDER')}
+                className="py-1 px-2 rounded-md text-[11px] font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300 transition cursor-pointer"
               >
                 Bidder
               </button>
-              <button 
+              <button
                 type="button"
-                className="btn btn-secondary btn-sm"
-                style={{ flex: 1, fontSize: '0.75rem' }}
-                onClick={() => handleQuickDemo('SELLER')}
+                onClick={() => handleDemoLogin('SELLER')}
+                className="py-1 px-2 rounded-md text-[11px] font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300 transition cursor-pointer"
               >
                 Seller
               </button>
-              <button 
+              <button
                 type="button"
-                className="btn btn-secondary btn-sm"
-                style={{ flex: 1, fontSize: '0.75rem', borderColor: 'rgba(245, 158, 11, 0.4)', color: '#fbbf24' }}
-                onClick={() => handleQuickDemo('ADMIN')}
+                onClick={() => handleDemoLogin('ADMIN')}
+                className="py-1 px-2 rounded-md text-[11px] font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300 transition cursor-pointer"
               >
                 Admin
               </button>
             </div>
           </div>
 
+          {error && (
+            <div className="mb-4 p-3 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700 font-medium">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-3.5">
+            {mode === 'register' && (
+              <>
+                {/* Role Switcher */}
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                    Account Type
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setRole('BIDDER')}
+                      className={`p-2 rounded-lg border text-left transition cursor-pointer ${
+                        role === 'BIDDER'
+                          ? 'border-navy-900 bg-navy-50/60 font-bold text-navy-900'
+                          : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span className="text-xs block font-bold">Bidder</span>
+                      <span className="text-[10px] text-slate-400 block font-normal">Collect & Bid</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRole('SELLER')}
+                      className={`p-2 rounded-lg border text-left transition cursor-pointer ${
+                        role === 'SELLER'
+                          ? 'border-navy-900 bg-navy-50/60 font-bold text-navy-900'
+                          : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span className="text-xs block font-bold">Seller</span>
+                      <span className="text-[10px] text-slate-400 block font-normal">Consign & List</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Name */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Full Name</label>
+                  <div className="relative">
+                    <User className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Vikram Malhotra"
+                      required
+                      className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-600 focus:bg-white"
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Email */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Email Address</label>
+              <div className="relative">
+                <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="vikram@example.com"
+                  required
+                  className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-600 focus:bg-white"
+                />
+              </div>
+            </div>
+
+            {/* Password */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Password</label>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  minLength={6}
+                  className="w-full pl-9 pr-9 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-600 focus:bg-white"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                </button>
+              </div>
+            </div>
+
+            {mode === 'register' && (
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Phone Number (Optional)</label>
+                <div className="relative">
+                  <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+91 98765 43210"
+                    className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-600 focus:bg-white"
+                  />
+                </div>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full mt-3 py-2.5 px-4 rounded-lg bg-navy-900 hover:bg-navy-800 text-white font-bold text-xs shadow-md transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            >
+              {submitting ? (
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <>
+                  <span>{mode === 'login' ? 'Sign In' : 'Create Free Account'}</span>
+                  <ArrowRight size={14} />
+                </>
+              )}
+            </button>
+          </form>
+
+          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-center gap-1.5 text-[11px] text-slate-500">
+            <ShieldCheck size={13} className="text-emerald-600" />
+            <span>256-bit encrypted institutional security</span>
+          </div>
         </div>
       </div>
     </div>

@@ -37,7 +37,7 @@ public class Item {
     @Column(length = 500)
     private String imageUrl;
 
-    @Column(length = 100)
+    @Column(name = "item_condition", length = 100)
     private String condition;
 
     @OneToOne(mappedBy = "item", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
