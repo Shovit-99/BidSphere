@@ -61,7 +61,7 @@ function PublicShell({ children }) {
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 antialiased font-sans">
       <PublicNavbar />
-      <main className="flex-1 pt-20">
+      <main className="flex-1 pt-32 sm:pt-36">
         {children}
       </main>
       <Footer />
@@ -162,6 +162,10 @@ function MainApp() {
             </PublicShell>
           }
         />
+
+        <Route path="/collections" element={<Navigate to="/auctions?category=ALL" replace />} />
+        <Route path="/consign" element={<Navigate to="/register" replace />} />
+        <Route path="/how-it-works" element={<Navigate to="/#how-it-works" replace />} />
 
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />

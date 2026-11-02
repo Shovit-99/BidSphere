@@ -21,7 +21,7 @@ import { useNotifications } from '../context/NotificationContext';
 export default function AuthPage({ defaultMode = 'login' }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, register, switchDemoRole } = useAuth();
+  const { user, login, register, switchDemoRole } = useAuth();
   const { addToast } = useNotifications();
 
   const [mode, setMode] = useState(defaultMode); // 'login' | 'register'
@@ -36,6 +36,12 @@ export default function AuthPage({ defaultMode = 'login' }) {
   const [agreed, setAgreed] = useState(true);
 
   const from = location.state?.from?.pathname || '/dashboard';
+
+  // Sync mode when route/defaultMode changes (e.g. clicking between /login and /register)
+  React.useEffect(() => {
+    setMode(defaultMode);
+    setError('');
+  }, [defaultMode]);
 
   // If already logged in, redirect straight to user's dashboard
   React.useEffect(() => {
@@ -107,37 +113,42 @@ export default function AuthPage({ defaultMode = 'login' }) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans">
+    <div className="min-h-screen bg-[#FBF9F5] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans">
       {/* Brand Header */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <Link to="/" className="inline-flex items-center gap-2.5 group">
-          <div className="w-10 h-10 rounded-xl bg-navy-900 flex items-center justify-center text-amber-400 shadow-md group-hover:scale-105 transition-transform">
-            <Gavel size={20} />
+        <Link to="/" className="inline-flex items-center gap-3 group">
+          <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#f5ede2] via-[#ede3d5] to-[#dfceb7] border border-[#c5a059]/40 flex items-center justify-center text-[#8a7258] shadow-sm group-hover:scale-105 transition-transform">
+            <Gavel size={20} className="text-[#8a7258] stroke-[2.2]" />
           </div>
-          <span className="text-2xl font-black text-slate-900 tracking-tight font-serif">
-            BID<span className="text-amber-500">SPHERE</span>
-          </span>
+          <div className="flex flex-col text-left leading-none">
+            <span className="font-serif font-black text-xl tracking-[0.18em] text-[#1c1815]">
+              BID<span className="text-[#d95c2e]">SPHERE</span>
+            </span>
+            <span className="text-[8px] uppercase tracking-[0.22em] font-semibold text-[#8e8576] mt-1">
+              HERITAGE AUCTIONEERS
+            </span>
+          </div>
         </Link>
-        <h2 className="mt-4 text-2xl font-extrabold text-slate-900 tracking-tight">
+        <h2 className="mt-6 text-2xl sm:text-3xl font-extrabold text-[#1c1815] tracking-tight font-serif">
           {mode === 'login' ? 'Sign in to BidSphere' : 'Create your BidSphere Account'}
         </h2>
-        <p className="mt-1 text-xs text-slate-500">
+        <p className="mt-1 text-xs text-[#8e8576]">
           India's Premier Institutional Live Auction Marketplace
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-6 shadow-xl shadow-slate-200/50 sm:rounded-2xl sm:px-10 border border-slate-200">
+        <div className="bg-white py-8 px-6 shadow-xl shadow-stone-900/5 sm:rounded-2xl sm:px-10 border border-[#E2D9C8]">
           
           {/* Tab Selector: Sign In vs Register */}
-          <div className="grid grid-cols-2 p-1 bg-slate-100 rounded-xl mb-6">
+          <div className="grid grid-cols-2 p-1 bg-[#F4EFE6] rounded-xl mb-6">
             <button
               type="button"
               onClick={() => { setMode('login'); setError(''); }}
               className={`py-2 rounded-lg text-xs font-bold transition cursor-pointer flex items-center justify-center gap-1.5 ${
                 mode === 'login'
-                  ? 'bg-white text-navy-900 shadow-2xs'
-                  : 'text-slate-500 hover:text-slate-900'
+                  ? 'bg-white text-[#1c1815] shadow-xs'
+                  : 'text-stone-500 hover:text-[#1c1815]'
               }`}
             >
               <LogIn size={14} />
@@ -148,8 +159,8 @@ export default function AuthPage({ defaultMode = 'login' }) {
               onClick={() => { setMode('register'); setError(''); }}
               className={`py-2 rounded-lg text-xs font-bold transition cursor-pointer flex items-center justify-center gap-1.5 ${
                 mode === 'register'
-                  ? 'bg-white text-navy-900 shadow-2xs'
-                  : 'text-slate-500 hover:text-slate-900'
+                  ? 'bg-white text-[#1c1815] shadow-xs'
+                  : 'text-stone-500 hover:text-[#1c1815]'
               }`}
             >
               <UserPlus size={14} />
@@ -350,7 +361,7 @@ export default function AuthPage({ defaultMode = 'login' }) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-2 py-3 px-4 rounded-lg bg-navy-900 hover:bg-navy-800 text-white font-bold text-sm shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="w-full mt-3 py-3.5 px-4 rounded-xl bg-gradient-to-r from-[#d95c2e] via-[#e26433] to-[#eb6f3a] hover:brightness-110 active:scale-95 text-white font-bold text-sm shadow-md shadow-orange-950/20 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
               {loading ? (
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

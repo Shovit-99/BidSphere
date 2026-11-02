@@ -397,10 +397,12 @@ export default function AuctionDetailPage() {
             </div>
 
             {/* Live Bidding Station */}
-            <BidForm
-              auction={auction}
-              onBidSuccess={handleBidSuccess}
-            />
+            <div id="bidding-station">
+              <BidForm
+                auction={auction}
+                onBidSuccess={handleBidSuccess}
+              />
+            </div>
 
             {/* Real-time Bid History Feed */}
             <BidHistory
@@ -419,14 +421,14 @@ export default function AuctionDetailPage() {
           <div className="mt-16 pt-12 border-t border-[#E2D9C8]">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="font-serif text-2xl font-bold text-[#14171A]">More From This Collection</h3>
+                <h3 className="font-serif text-2xl font-bold text-[#14171A]">More from this collection</h3>
                 <p className="text-xs text-[#7C828D] mt-0.5">Explore companion pieces currently open for bidding</p>
               </div>
               <Link
                 to="/auctions"
                 className="text-xs font-bold text-[#D95A2B] hover:text-[#C04B1F] flex items-center gap-1"
               >
-                <span>View All Lots</span>
+                <span>View all lots</span>
                 <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
@@ -440,6 +442,51 @@ export default function AuctionDetailPage() {
         )}
 
       </div>
+
+      {/* ============================================================
+          Sticky Mobile Bidding Action Bar (Countdown & Current Bid Always Visible)
+          ============================================================ */}
+      {auction && (
+        <aside 
+          aria-label="Mobile bidding bar" 
+          className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#14171A]/95 backdrop-blur-md border-t border-[#2A2E38] px-4 py-3 shadow-[0_-8px_24px_rgba(0,0,0,0.3)] safe-area-bottom"
+        >
+          <div className="max-w-md mx-auto flex items-center justify-between gap-3">
+            <div className="flex flex-col min-w-0">
+              <div className="flex items-center gap-1.5 text-[10px] font-mono text-slate-400">
+                <Clock className="w-3 h-3 text-[#D95A2B] shrink-0" />
+                <span className="truncate">
+                  {auction.endTime ? (
+                    <CountdownTimer endTime={auction.endTime} variant="badge" />
+                  ) : 'Live'}
+                </span>
+              </div>
+              <div className="text-lg font-black font-mono text-[#D95A2B] leading-tight">
+                {formatINR(auction.currentPrice || auction.startingPrice)}
+              </div>
+              <div className="text-[10px] text-slate-400 truncate">
+                Lot #{auction.id} • {auction.bidCount || 0} {auction.bidCount === 1 ? 'bid' : 'bids'}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                const el = document.getElementById('bidding-station');
+                if (el) {
+                  el.scrollIntoView({ behavior: 'smooth' });
+                  const input = el.querySelector('input');
+                  if (input) setTimeout(() => input.focus(), 300);
+                }
+              }}
+              className="px-5 py-2.5 rounded-xl bg-[#D95A2B] hover:bg-[#C04B1F] active:bg-[#A83F17] text-white font-bold text-xs shadow-md shadow-[#D95A2B]/20 flex items-center gap-1.5 whitespace-nowrap cursor-pointer shrink-0"
+            >
+              <Gavel className="w-4 h-4" />
+              <span>Enter bid</span>
+            </button>
+          </div>
+        </aside>
+      )}
     </div>
   );
 }

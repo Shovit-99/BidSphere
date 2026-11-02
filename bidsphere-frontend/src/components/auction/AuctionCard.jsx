@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, Gavel, Clock, ShieldCheck, User, Users, ArrowRight } from 'lucide-react';
+import { Heart, Clock, ShieldCheck, User, ArrowRight } from 'lucide-react';
 import CountdownTimer from '../common/CountdownTimer';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
@@ -10,14 +10,15 @@ import { formatINR } from '../../lib/currency';
 export default function AuctionCard({
   auction,
   onOpenAuction,
+  onOpenBidModal,
   isWatchlisted = false,
   onWatchlistToggle,
-  variant = 'default'
+  isInWatchlist
 }) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { addToast } = useNotifications();
-  const [inWatchlist, setInWatchlist] = useState(isWatchlisted);
+  const [inWatchlist, setInWatchlist] = useState(isWatchlisted || isInWatchlist || false);
   const [loadingWatchlist, setLoadingWatchlist] = useState(false);
 
   if (!auction) return null;
@@ -31,9 +32,9 @@ export default function AuctionCard({
     imageUrl,
     categoryName,
     status = 'ACTIVE',
-    bidCount = 0,
     endTime,
     sellerUsername,
+    sellerName,
     sellerAvatar
   } = auction;
 
@@ -67,7 +68,7 @@ export default function AuctionCard({
     if (!user) {
       addToast({
         type: 'warning',
-        title: 'Sign In Required',
+        title: 'Sign in required',
         message: 'Please sign in to add items to your watchlist.'
       });
       return;
@@ -95,6 +96,8 @@ export default function AuctionCard({
   const handleCardClick = () => {
     if (onOpenAuction) {
       onOpenAuction(auction);
+    } else if (onOpenBidModal) {
+      onOpenBidModal(auction);
     } else {
       navigate(`/auctions/${id}`);
     }
@@ -103,10 +106,10 @@ export default function AuctionCard({
   return (
     <article
       onClick={handleCardClick}
-      className="group bg-white rounded-2xl border border-[#E2D9C8] overflow-hidden shadow-[0_4px_20px_-2px_rgba(20,23,26,0.04)] hover:shadow-[0_16px_36px_-6px_rgba(20,23,26,0.09)] hover:border-[#D5C9B4] transition-all duration-300 flex flex-col cursor-pointer relative"
+      className="group bg-white rounded-[20px] border border-[#E2D9C8] overflow-hidden shadow-[0_4px_20px_-2px_rgba(20,23,26,0.04)] hover:shadow-[0_16px_36px_-6px_rgba(20,23,26,0.09)] hover:border-[#D5C9B4] transition-all duration-300 flex flex-col cursor-pointer relative"
     >
-      {/* 1. Media Image Area */}
-      <div className="relative h-56 sm:h-60 w-full bg-[#14171A] overflow-hidden">
+      {/* 1. Media Image & Status Badge Area */}
+      <div className="relative h-56 sm:h-60 w-full bg-[#121416] overflow-hidden">
         <img
           src={imageUrl || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80'}
           alt={title}
@@ -117,7 +120,7 @@ export default function AuctionCard({
           }}
         />
 
-        {/* Top Floating Badges */}
+        {/* Top Floating Badges using rounded pills */}
         <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between pointer-events-none">
           <div className="flex items-center gap-1.5 flex-wrap">
             {isLive ? (
@@ -127,46 +130,31 @@ export default function AuctionCard({
                   CLOSING SOON
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-[#14171A]/90 text-white shadow-sm border border-white/10 backdrop-blur-md">
-                  <span className="w-2 h-2 rounded-full bg-[#C5A059] inline-block" />
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-[#121416]/90 text-white shadow-sm border border-white/10 backdrop-blur-md">
+                  <span className="w-2 h-2 rounded-full bg-[#e85b2a] inline-block animate-pulse" />
                   LIVE LOT
                 </span>
               )
             ) : isUpcoming ? (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-[#F4EFE6] text-[#14171A] border border-[#E2D9C8] shadow-xs">
-                <Clock className="w-3 h-3 text-[#D95A2B]" />
-                Upcoming
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-[#F4EFE6] text-[#121416] border border-[#E2D9C8] shadow-xs">
+                <Clock className="w-3 h-3 text-[#e85b2a]" />
+                UPCOMING
               </span>
             ) : (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-medium bg-[#14171A]/80 text-[#EBE4D5] backdrop-blur-xs">
-                Closed
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-medium bg-[#121416]/80 text-[#EBE4D5] backdrop-blur-xs">
+                CLOSED
               </span>
             )}
 
-            {categoryName && (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-white/90 text-[#14171A] shadow-xs backdrop-blur-md border border-[#E2D9C8]">
-                {categoryName}
-              </span>
-            )}
+            {/* COA included badge */}
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-[#121416]/85 text-[#C5A059] border border-[#C5A059]/40 backdrop-blur-md shadow-xs">
+              <ShieldCheck className="w-3 h-3 text-[#C5A059]" />
+              <span>COA</span>
+            </span>
           </div>
-
-          {/* Watchlist Action */}
-          <button
-            type="button"
-            onClick={handleToggleWatchlist}
-            disabled={loadingWatchlist}
-            aria-label="Add to watchlist"
-            className={`pointer-events-auto w-8 h-8 rounded-full flex items-center justify-center transition shadow-sm ${
-              inWatchlist
-                ? 'bg-[#FAF0EB] text-[#D95A2B] border border-[#D95A2B]/30'
-                : 'bg-white/95 text-[#4A505A] hover:text-[#D95A2B] hover:bg-white border border-[#E2D9C8] backdrop-blur-xs'
-            }`}
-          >
-            <Heart className={`w-4 h-4 ${inWatchlist ? 'fill-current text-[#D95A2B]' : ''}`} />
-          </button>
         </div>
 
-        {/* Countdown Badge on Image (Urgent: Pulsing Red with seconds | Standard: Muted amber/slate) */}
+        {/* Countdown Badge on Image */}
         {endTime && !isEnded && (
           <div className="absolute bottom-3 left-3 pointer-events-none">
             {isUrgent ? (
@@ -176,7 +164,7 @@ export default function AuctionCard({
                 <CountdownTimer endTime={endTime} variant="badge" />
               </div>
             ) : (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#14171A]/85 backdrop-blur-md text-[#EBE4D5] text-[11px] font-mono border border-white/10 shadow-xs">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#121416]/85 backdrop-blur-md text-[#EBE4D5] text-[11px] font-mono border border-white/10 shadow-xs">
                 <Clock className="w-3 h-3 text-[#C5A059]" />
                 <CountdownTimer endTime={endTime} variant="badge" />
               </div>
@@ -185,117 +173,102 @@ export default function AuctionCard({
         )}
       </div>
 
-      {/* 2. Editorial Product Content */}
+      {/* 2. Category, Title & Watchlist Icon */}
       <div className="p-5 flex-1 flex flex-col justify-between bg-white">
         <div>
-          {/* Seller / Verified Consignor Bar with Provenance Tooltip */}
-          <div className="flex items-center justify-between text-xs text-[#7C828D] mb-2">
-            <div className="relative group/prov inline-block">
-              <div className="flex items-center gap-1.5 cursor-pointer">
-                <div className="w-4 h-4 rounded-full bg-[#F4EFE6] border border-[#E2D9C8] overflow-hidden flex items-center justify-center text-[9px] font-bold text-[#14171A]">
-                  {sellerAvatar ? (
-                    <img src={sellerAvatar} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <User className="w-2.5 h-2.5" />
-                  )}
-                </div>
-                <span className="truncate max-w-[130px] font-medium text-[#4A505A] group-hover/prov:text-[#D95A2B] transition-colors">
-                  {sellerUsername || 'Verified Consignor'}
-                </span>
-                <ShieldCheck className="w-3.5 h-3.5 text-[#C5A059] shrink-0" />
-              </div>
-
-              {/* Provenance & Authority Floating Tooltip Card on Hover */}
-              <div className="absolute left-0 bottom-full mb-2 z-50 hidden group-hover/prov:block w-72 p-3.5 bg-[#14171A] text-white rounded-xl shadow-2xl border border-[#2A303C] text-xs pointer-events-none transition-all duration-200">
-                <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10">
-                  <span className="font-bold text-[#C5A059] flex items-center gap-1 text-[11px]">
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                    Verified Provenance
-                  </span>
-                  <span className="text-[10px] font-mono text-slate-400">{auction.coaNumber || `COA-#${id}`}</span>
-                </div>
-                <p className="text-[11px] font-semibold text-slate-200 mb-1">
-                  {auction.issuingAuthority || 'Certified Consignor Verification Board'}
-                </p>
-                <p className="text-[10px] text-slate-400 leading-relaxed mb-2">
-                  {auction.provenance || 'Physical inspection and chain of custody verified by credentialed specialists.'}
-                </p>
-                <div className="text-[9px] text-[#4ADE80] font-mono bg-emerald-950/40 px-2 py-1 rounded border border-emerald-500/20">
-                  ✓ Escrow Protection &amp; Anti-Snipe Guarantee
-                </div>
-              </div>
-            </div>
-
-            <span className="text-[11px] font-mono text-[#7C828D]">
+          {/* Category & Lot Number */}
+          <div className="flex items-center justify-between text-xs text-stone-500 mb-2">
+            <span className="font-semibold uppercase tracking-wider text-[#e85b2a] truncate max-w-[170px]">
+              {categoryName || 'Fine Collectibles'}
+            </span>
+            <span className="text-[11px] font-mono text-stone-400">
               Lot #{id}
             </span>
           </div>
 
-          {/* Product Title (Editorial Serif Typography) */}
-          <h3 className="font-serif text-base sm:text-lg font-bold text-[#14171A] group-hover:text-[#D95A2B] transition-colors line-clamp-1 leading-snug">
-            {title}
-          </h3>
-
-          {/* Optional Short Description */}
-          {description && (
-            <p className="text-xs text-[#7C828D] line-clamp-1 mt-1 leading-relaxed">
-              {description}
-            </p>
-          )}
-        </div>
-
-        {/* 3. Pricing, Bid Count & View CTA Panel */}
-        <div className="pt-4 mt-4 border-t border-[#EFE9DF] flex flex-col gap-3">
-          <div className="flex items-end justify-between gap-3">
-            {/* Price Column with Current Bid & Next Minimum Bid */}
-            <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#7C828D] block">
-                {isEnded ? 'Hammer Price' : isUpcoming ? 'Opening Estimate' : 'Current Bid'}
-              </span>
-              <span className="text-xl sm:text-2xl font-black text-[#D95A2B] font-mono leading-none tracking-tight">
-                {formatINR(displayPrice)}
-              </span>
-
-              {/* Next Minimum Bid and Count Info */}
-              <div className="mt-1.5 space-y-0.5">
-                {!isEnded && !isUpcoming && (
-                  <span className="text-[11px] font-semibold text-[#14171A] flex items-center gap-1">
-                    <span className="text-[#7C828D] font-normal">Next Bid:</span>
-                    <span className="font-mono font-bold text-[#14171A]">{formatINR(nextMinBid)}</span>
-                  </span>
-                )}
-                <span className="text-[10px] text-[#7C828D] block">
-                  {bidCount} {bidCount === 1 ? 'bid placed' : 'bids placed'}
-                  {startingPrice && <span className="text-[#A0A6B2]"> • Start {formatINR(startingPrice)}</span>}
-                </span>
-              </div>
-            </div>
-
-            {/* View Auction CTA (Burnt Orange Capsule) */}
+          {/* Product Title with Watchlist Heart Button next to it */}
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="font-serif text-base sm:text-lg font-bold text-[#121416] group-hover:text-[#e85b2a] transition-colors line-clamp-1 leading-snug flex-1">
+              {title}
+            </h3>
             <button
               type="button"
-              onClick={handleCardClick}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#14171A] group-hover:bg-[#D95A2B] text-white text-xs font-bold transition-all duration-200 shadow-sm cursor-pointer whitespace-nowrap"
+              onClick={handleToggleWatchlist}
+              disabled={loadingWatchlist}
+              title={inWatchlist ? "Remove from watchlist" : "Add to watchlist"}
+              aria-label="Add to watchlist"
+              className={`p-1.5 rounded-lg transition-colors shrink-0 cursor-pointer ${
+                inWatchlist
+                  ? 'text-[#e85b2a] bg-[#FAF0EB]'
+                  : 'text-stone-400 hover:text-[#e85b2a] hover:bg-[#F4EFE6]'
+              }`}
             >
-              <span>{isEnded ? 'View Result' : isUpcoming ? 'Inspect Lot' : 'View Auction'}</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              <Heart className={`w-4 h-4 ${inWatchlist ? 'fill-current text-[#e85b2a]' : ''}`} />
             </button>
           </div>
 
-          {/* Hairline Footer info */}
-          <div className="pt-2 border-t border-[#F4EFE6] flex items-center justify-between text-[11px] text-[#7C828D]">
+          {/* Consignor attribution */}
+          <div className="flex items-center gap-1.5 mt-1.5 text-xs text-stone-500">
+            <div className="w-3.5 h-3.5 rounded-full bg-[#F4EFE6] border border-[#E2D9C8] flex items-center justify-center text-[8px] font-bold text-[#121416]">
+              {sellerAvatar ? (
+                <img src={sellerAvatar} alt="" className="w-full h-full object-cover rounded-full" />
+              ) : (
+                <User className="w-2.5 h-2.5 text-stone-500" />
+              )}
+            </div>
+            <span className="truncate max-w-[160px] text-stone-600 font-medium text-[11px]">
+              {sellerUsername || sellerName || 'Verified Consignor'}
+            </span>
+            <ShieldCheck className="w-3 h-3 text-[#C5A059] shrink-0" />
+          </div>
+        </div>
+
+        {/* 3. Bottom Action Area - Aligned with LiveLotCard */}
+        <div className="pt-3.5 mt-3.5 border-t border-[#EFE9DF] flex flex-col gap-2.5">
+          <div className="flex items-center justify-between gap-3">
+            {/* Price Column: Current Bid & Next Minimum Bid on the Left */}
+            <div className="flex-1 min-w-0">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block leading-tight">
+                {isEnded ? 'Hammer price' : isUpcoming ? 'Opening estimate' : 'Current bid'}
+              </span>
+              <span className="text-xl sm:text-2xl font-black text-[#e85b2a] font-mono leading-tight tracking-tight block">
+                {formatINR(displayPrice)}
+              </span>
+
+              {/* Next Minimum Bid */}
+              {!isEnded && !isUpcoming && (
+                <div className="text-[11px] font-semibold text-[#121416] flex items-center gap-1 mt-0.5 truncate">
+                  <span className="text-stone-500 font-normal">Next minimum:</span>
+                  <span className="font-mono font-bold text-[#121416]">{formatINR(nextMinBid)}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Enter Bid Button on the Right: 12-16px radius, sentence case */}
+            <button
+              type="button"
+              onClick={handleCardClick}
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#e85b2a] hover:bg-[#cf4d1f] active:bg-[#b54016] text-white text-xs font-bold transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer whitespace-nowrap shrink-0 transform hover:-translate-y-0.5"
+            >
+              <span>{isEnded ? 'View result' : isUpcoming ? 'Inspect lot' : 'Enter bid'}</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {/* Hairline Footer info with countdown */}
+          <div className="pt-2 border-t border-[#F4EFE6] flex items-center justify-between text-[11px] text-stone-500">
             {isUrgent ? (
               <span className="font-mono text-red-600 font-bold flex items-center gap-1 animate-pulse">
                 <Clock className="w-3 h-3" />
                 {getEndsInText()}
               </span>
             ) : (
-              <span className="font-mono text-[#5A606A] font-semibold flex items-center gap-1">
+              <span className="font-mono text-stone-600 font-semibold flex items-center gap-1">
                 <Clock className="w-3 h-3 text-[#C5A059]" />
                 {getEndsInText()}
               </span>
             )}
-            <span className="text-[#A0A6B2]">Anti-Snipe Protected</span>
+            <span className="text-stone-400 text-[10px]">Anti-snipe protected</span>
           </div>
         </div>
       </div>

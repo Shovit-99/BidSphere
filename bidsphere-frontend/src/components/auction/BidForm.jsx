@@ -177,21 +177,21 @@ export default function BidForm({
           </div>
         )}
 
-        {/* Submit Bid Button (Burnt Orange Capsule) */}
+        {/* Submit Bid Button (Refined 12-16px Radius) */}
         <button
           type="submit"
           disabled={submitting}
-          className="w-full py-3.5 px-6 rounded-full bg-[#D95A2B] hover:bg-[#C04B1F] active:bg-[#A83F17] disabled:opacity-50 text-white font-bold text-sm transition-all duration-200 shadow-md shadow-[#D95A2B]/20 flex items-center justify-center gap-2 cursor-pointer transform hover:-translate-y-0.5"
+          className="w-full py-3.5 px-6 rounded-xl bg-[#D95A2B] hover:bg-[#C04B1F] active:bg-[#A83F17] disabled:opacity-50 text-white font-bold text-sm transition-all duration-200 shadow-md shadow-[#D95A2B]/20 flex items-center justify-center gap-2 cursor-pointer transform hover:-translate-y-0.5"
         >
           {submitting ? (
             <>
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              <span>Verifying Escrow &amp; Submitting...</span>
+              <span>Verifying escrow &amp; placing bid...</span>
             </>
           ) : (
             <>
               <Gavel className="w-4 h-4" />
-              <span>Submit Official Bid of {formatINR(Number(bidAmount) || minNextBid)}</span>
+              <span>Enter bid of {formatINR(Number(bidAmount) || minNextBid)}</span>
             </>
           )}
         </button>
